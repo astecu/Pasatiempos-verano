@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0ea5e9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pasatiempos V2">
+<title>Pasatiempos de Verano V2</title>
+<style>
+:root{--bg:#f6fbff;--card:#fff;--ink:#102033;--muted:#6b7b8c;--blue:#0ea5e9;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--line:#dbe7ef;--shadow:0 12px 30px rgba(25,74,105,.12)}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:linear-gradient(#dff5ff 0,#f6fbff 28%);color:var(--ink);min-height:100vh}
+header{background:linear-gradient(135deg,#0284c7,#22c55e);color:#fff;padding:calc(18px + env(safe-area-inset-top)) 18px 22px}
+header h1{margin:0;font-size:28px} header p{margin:6px 0 0;opacity:.92}
+main{max-width:800px;margin:auto;padding:16px 14px calc(95px + env(safe-area-inset-bottom))}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:-12px}
+.stat{background:#fff;border-radius:17px;padding:11px 6px;text-align:center;box-shadow:var(--shadow)} .stat b{font-size:19px;display:block}.stat small{color:var(--muted)}
+.hero{margin-top:16px;background:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.hero h2{margin:0 0 5px}.hero p{color:var(--muted);margin:0 0 12px}
+.primary,.secondary,.option{border:0;border-radius:14px;padding:11px 14px;font-weight:700;font-size:15px}
+.primary{background:var(--blue);color:#fff}.secondary{background:#eaf2f6}.option{background:#fff;border:1px solid var(--line);text-align:left}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.card{background:#fff;border:0;border-radius:20px;padding:15px;text-align:left;box-shadow:var(--shadow);min-height:128px}.card .ic{font-size:30px}.card h3{margin:8px 0 4px}.card p{margin:0;color:var(--muted);font-size:13px}
+.section-title{font-size:19px;margin:22px 2px 11px}.panel{background:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-top:12px}.hidden{display:none}
+.feedback{padding:12px 14px;border-radius:14px;margin-top:12px}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+input[type=text]{width:100%;padding:12px;border:1px solid var(--line);border-radius:13px;font-size:16px}
+.options{display:grid;gap:8px}.puzzle{font-size:20px;line-height:1.45;margin:10px 0 15px}
+.tabs{display:flex;overflow:auto;gap:7px;padding-bottom:3px}.tab{min-width:44px;height:42px;border:0;border-radius:12px;background:#e8f1f5;font-weight:800}.tab.on{background:var(--blue);color:#fff}
+.ws{display:grid;gap:3px;justify-content:center;margin:12px auto}.cell{width:29px;height:29px;border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:800;background:#fff;user-select:none}.cell.sel{background:#bae6fd}.cell.found{background:#bbf7d0}
+.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{background:#edf4f7;padding:6px 9px;border-radius:99px;font-size:13px}.chip.done{text-decoration:line-through;background:#dcfce7}
+.cw{display:grid;gap:2px;justify-content:center;margin:14px auto}.cwi{width:35px;height:35px;text-align:center;text-transform:uppercase;font-weight:800;font-size:18px;border:1px solid #9db2bf;border-radius:4px}.blk{width:35px;height:35px;background:#102033;border-radius:4px}
+.rosco{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:12px 0}.rletter{aspect-ratio:1;border-radius:50%;border:0;background:#e8f1f5;font-weight:800}.rletter.on{background:var(--blue);color:white}.rletter.good{background:#22c55e;color:#fff}.rletter.bad{background:#ef4444;color:#fff}
+.wordmix{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:12px 0}.tile{padding:10px 12px;border:0;border-radius:11px;background:#e8f1f5;font-weight:800;font-size:18px}
+.progress{height:9px;background:#e8f1f5;border-radius:99px;overflow:hidden}.progress>div{height:100%;background:var(--green)}
+nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);padding:9px 12px calc(9px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+nav div{max-width:800px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}nav button{border:0;border-radius:13px;background:#edf4f7;padding:9px;font-size:12px}
+@media(max-width:410px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr 1fr}.cell{width:26px;height:26px;font-size:13px}}
+</style>
+</head>
+<body>
+<header><h1>☀️ Pasatiempos de Verano V2</h1><p>Juegos rápidos para móvil · sin sudokus · progreso guardado</p></header>
+<main>
+<section id="home">
+  <div class="stats">
+    <div class="stat"><b id="score">0</b><small>Puntos</small></div>
+    <div class="stat"><b id="wins">0</b><small>Aciertos</small></div>
+    <div class="stat"><b id="streak">0</b><small>Racha</small></div>
+    <div class="stat"><b id="level">1</b><small>Nivel</small></div>
+  </div>
+  <div class="hero">
+    <h2>🌞 Juego del día</h2>
+    <p id="dailyText">Una prueba nueva cada día.</p>
+    <button class="primary" onclick="daily()">Jugar ahora</button>
+  </div>
+
+  <h2 class="section-title">Todos los juegos</h2>
+  <div class="grid">
+    <button class="card" onclick="quizGame()"><div class="ic">🧠</div><h3>Acertijos</h3><p>Lógica, trampas y adivinanzas.</p></button>
+    <button class="card" onclick="wordSearch()"><div class="ic">🔎</div><h3>Sopa de letras</h3><p>Encuentra palabras veraniegas.</p></button>
+    <button class="card" onclick="crossword()"><div class="ic">✏️</div><h3>Crucigrama</h3><p>Mini crucigramas para móvil.</p></button>
+    <button class="card" onclick="rosco()"><div class="ic">⭕</div><h3>Rosco</h3><p>Definiciones de la A a la Z.</p></button>
+    <button class="card" onclick="anagram()"><div class="ic">🔀</div><h3>Anagramas</h3><p>Ordena letras y forma palabras.</p></button>
+    <button class="card" onclick="emojiGame()"><div class="ic">🎬</div><h3>Emojis</h3><p>Películas, música y expresiones.</p></button>
+    <button class="card" onclick="hangman()"><div class="ic">🪢</div><h3>Ahorcado</h3><p>Adivina la palabra antes de fallar.</p></button>
+    <button class="card" onclick="trueFalse()"><div class="ic">⚡</div><h3>Verdadero/Falso</h3><p>Cultura general rápida.</p></button>
+  </div>
+
+  <div class="panel">
+    <b>🏆 Progreso</b>
+    <p style="color:var(--muted)">Cada 10 puntos subes un nivel.</p>
+    <div class="progress"><div id="bar"></div></div>
+  </div>
+</section>
+<section id="game" class="hidden"></section>
+</main>
+<nav><div><button onclick="goHome()">🏠<br>Inicio</button><button onclick="daily()">🌞<br>Del día</button><button onclick="resetAll()">↻<br>Reiniciar</button></div></nav>
+
+<script>
+const S=JSON.parse(localStorage.getItem('pv2')||'{"score":0,"wins":0,"streak":0,"quiz":0}');
+function save(){localStorage.setItem('pv2',JSON.stringify(S));stats()}
+function stats(){score.textContent=S.score;wins.textContent=S.wins;streak.textContent=S.streak;level.textContent=Math.floor(S.score/10)+1;bar.style.width=((S.score%10)*10)+'%'}
+stats();
+function award(ok){if(ok){S.score++;S.wins++;S.streak++}else S.streak=0;save()}
+function shell(title,html){home.classList.add('hidden');game.classList.remove('hidden');game.innerHTML=`<button class="secondary" onclick="goHome()">← Inicio</button><div class="panel"><h2 style="margin-top:0">${title}</h2>${html}</div>`}
+function goHome(){game.classList.add('hidden');home.classList.remove('hidden');stats()}
+function norm(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toUpperCase()}
+
+const Q=[
+["Vas en una carrera y adelantas al segundo. ¿En qué posición quedas?",["Primero","Segundo","Tercero"],1,"Ocupas el puesto del segundo."],
+["¿Cuántos meses tienen 28 días?",["Uno","Todos","Seis"],1,"Todos tienen al menos 28 días."],
+["Un gallo pone un huevo en un tejado. ¿Hacia qué lado cae?",["Izquierda","Derecha","Ninguno"],2,"Los gallos no ponen huevos."],
+["Una mujer tiene 4 hijas y cada hija un hermano. ¿Cuántos hijos tiene?",["5","8","4"],0,"Las cuatro pueden compartir el mismo hermano."],
+["Antes de descubrirse el Everest, ¿qué montaña era la más alta?",["K2","Everest","Alpes"],1,"El Everest ya era la más alta."],
+["¿Qué puedes romper sin tocar?",["El silencio","El hierro","Una mesa"],0,"El silencio se rompe haciendo ruido."],
+["Un médico da 3 pastillas: una cada 30 minutos. ¿Cuánto tardas en tomarlas?",["1 hora","1,5 horas","30 min"],0,"Primera ahora, segunda a 30 min y tercera a 60 min."],
+["¿Qué pesa más?",["1 kg hierro","1 kg plumas","Lo mismo"],2,"Ambos pesan un kilo."],
+["Un avión cae en la frontera. ¿Dónde entierran a los supervivientes?",["España","Francia","En ningún sitio"],2,"A los supervivientes no se les entierra."],
+["¿Qué tiene agujas y números pero no cose ni cuenta?",["Reloj","Brújula","Pino"],0,"Un reloj."]
+];
+function quizGame(){let i=S.quiz%Q.length,q=Q[i];shell("🧠 Acertijo",`<div class="puzzle">${q[0]}</div><div class="options">${q[1].map((x,j)=>`<button class="option" onclick="answerQ(${j})">${x}</button>`).join('')}</div><div id="fb"></div>`)}
+function answerQ(j){let q=Q[S.quiz%Q.length],ok=j===q[2];award(ok);fb.innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Correcto':'❌ No'}<br>${q[3]}</div><p><button class="primary" onclick="nextQ()">Siguiente</button></p>`}
+function nextQ(){S.quiz++;save();quizGame()}
+
+const GRID=["VERANOPLAY","MARSOLRISA","PLAYACASAL","FIESTANUBE","AMIGOSRIOS","TARDELUZOL","CALORBARCO","PISCINAMAR","HELADOSOLA","VIAJEROSAL"].map(x=>x.split(""));
+const WORDS=["VERANO","MAR","PLAYA","FIESTA","AMIGOS","CALOR","PISCINA","HELADO"];
+let sel=[];
+function wordSearch(){shell("🔎 Sopa de letras",`<p>Toca letras contiguas en línea y comprueba.</p><div class="ws" style="grid-template-columns:repeat(10,29px)">${GRID.flatMap((r,y)=>r.map((c,x)=>`<div class="cell" data-k="${x},${y}" onclick="pick(this)">${c}</div>`)).join('')}</div><div class="chips">${WORDS.map(w=>`<span class="chip" data-w="${w}">${w}</span>`).join('')}</div><p><button class="primary" onclick="checkWS()">Comprobar</button> <button class="secondary" onclick="clearWS()">Borrar</button></p><div id="wsfb"></div>`)}
+function pick(e){let k=e.dataset.k;e.classList.toggle('sel');if(e.classList.contains('sel'))sel.push({e,ch:e.textContent,k});else sel=sel.filter(x=>x.k!==k)}
+function clearWS(){sel.forEach(x=>x.e.classList.remove('sel'));sel=[]}
+function checkWS(){let w=sel.map(x=>x.ch).join(''),r=w.split('').reverse().join(''),f=WORDS.find(x=>x===w||x===r);if(f){award(true);sel.forEach(x=>{x.e.classList.remove('sel');x.e.classList.add('found')});document.querySelector(`[data-w="${f}"]`).classList.add('done');wsfb.innerHTML=`<div class="feedback ok">✅ ${f}</div>`;sel=[]}else{award(false);wsfb.innerHTML=`<div class="feedback bad">No coincide con una palabra de la lista.</div>`}}
+
+const CW=[
+{layout:["#SOL#","MAREA","#LUZ#","CALOR","#RIO#"],clues:"1 Astro del día (3) · 2 Movimiento del mar (5) · 3 Claridad (3) · 4 Sensación veraniega (5) · 5 Corriente de agua (3)"},
+{layout:["#MAR#","PLAYA","#OLA#","ARENA","#SOL#"],clues:"1 Gran masa de agua (3) · 2 Zona de baño (5) · 3 Movimiento marino (3) · 4 Cubre muchas playas (5) · 5 Astro del día (3)"}
+];
+let cwi=0;
+function crossword(){let c=CW[cwi%CW.length];shell("✏️ Crucigrama",`<p>${c.clues}</p><div class="cw" style="grid-template-columns:repeat(5,35px)">${c.layout.join('').split('').map(ch=>ch==="#"?`<div class="blk"></div>`:`<input class="cwi" maxlength="1" data-s="${ch}">`).join('')}</div><p><button class="primary" onclick="checkCW()">Comprobar</button> <button class="secondary" onclick="cwi++;crossword()">Otro</button></p><div id="cwfb"></div>`)}
+function checkCW(){let ok=[...document.querySelectorAll('.cwi')].every(x=>norm(x.value)===x.dataset.s);award(ok);cwfb.innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Resuelto':'Hay letras que no encajan.'}</div>`}
+
+const ROSCO={
+A:["Empieza por A: ave rapaz de gran tamaño","AGUILA"],B:["Empieza por B: objeto redondo usado en deportes","BALON"],C:["Empieza por C: lugar donde vives","CASA"],D:["Empieza por D: jornada de 24 horas","DIA"],E:["Empieza por E: animal grande con trompa","ELEFANTE"],F:["Empieza por F: celebración con música y amigos","FIESTA"],G:["Empieza por G: animal doméstico que maúlla","GATO"],H:["Empieza por H: postre frío típico del verano","HELADO"],I:["Empieza por I: porción de tierra rodeada de agua","ISLA"],J:["Empieza por J: diversión o entretenimiento con reglas","JUEGO"],L:["Empieza por L: satélite natural de la Tierra","LUNA"],M:["Empieza por M: gran masa de agua salada","MAR"],N:["Empieza por N: masa blanca o gris del cielo","NUBE"],O:["Empieza por O: movimiento del mar","OLA"],P:["Empieza por P: zona de arena junto al mar","PLAYA"],R:["Empieza por R: corriente natural de agua","RIO"],S:["Empieza por S: astro que ilumina el día","SOL"],T:["Empieza por T: bebida hecha con hojas infusionadas","TE"],V:["Empieza por V: estación de calor y vacaciones","VERANO"],Z:["Empieza por Z: calzado abierto de verano","ZAPATILLA"]
+};
+let rk=Object.keys(ROSCO),ri=0,rstatus={};
+function rosco(){let l=rk[ri%rk.length],q=ROSCO[l][0];shell("⭕ Rosco",`<div class="rosco">${rk.map(x=>`<button class="rletter ${x===l?'on':''} ${rstatus[x]||''}">${x}</button>`).join('')}</div><div class="puzzle">${q}</div><input id="ranswer" type="text" placeholder="Respuesta"><p><button class="primary" onclick="checkRosco('${l}')">Responder</button> <button class="secondary" onclick="ri++;rosco()">Pasapalabra</button></p><div id="rfb"></div>`)}
+function checkRosco(l){let ok=norm(ranswer.value)===norm(ROSCO[l][1]);rstatus[l]=ok?'good':'bad';award(ok);rfb.innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Correcto':'❌ Era '+ROSCO[l][1]}</div><p><button class="primary" onclick="ri++;rosco()">Siguiente</button></p>`}
+
+const ANA=[["NRAEVEO","VERANO"],["YAPLA","PLAYA"],["RMA","MAR"],["ODHLEA","HELADO"],["SOTFIEA","FIESTA"],["NIPCAIS","PISCINA"],["LOAS","SOLA"],["RAOCB","BARCO"]];
+let ai=0;
+function anagram(){let [mix,ans]=ANA[ai%ANA.length];shell("🔀 Anagrama",`<p>Ordena las letras:</p><div class="wordmix">${mix.split('').map(x=>`<span class="tile">${x}</span>`).join('')}</div><input id="aans" type="text" placeholder="Palabra"><p><button class="primary" onclick="checkAna('${ans}')">Comprobar</button> <button class="secondary" onclick="ai++;anagram()">Otro</button></p><div id="afb"></div>`)}
+function checkAna(ans){let ok=norm(aans.value)===ans;award(ok);afb.innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Correcto':'❌ Era '+ans}</div>`}
+
+const EM=[["👴🎈🏠☁️","UP"],["🦁👑","EL REY LEON"],["🚢🧊💔","TITANIC"],["👻🔫","CAZAFANTASMAS"],["👑👑👑👑🇸🇪","ABBA"],["👽📞🏠","ET"],["🧙‍♂️💍🌋","EL SENOR DE LOS ANILLOS"]];
+let ei=0;
+function emojiGame(){let [e,a]=EM[ei%EM.length];shell("🎬 Adivina con emojis",`<div style="font-size:42px;text-align:center;margin:16px">${e}</div><input id="eans" type="text" placeholder="¿Qué es?"><p><button class="primary" onclick="checkEmoji('${a}')">Comprobar</button> <button class="secondary" onclick="ei++;emojiGame()">Otro</button></p><div id="efb"></div>`)}
+function checkEmoji(a){let ok=norm(eans.value)===norm(a);award(ok);efb.innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Correcto':'❌ Era '+a}</div>`}
+
+const HWORDS=["VERANO","PLAYA","HELADO","BARCO","PISCINA","AMIGOS","VIAJE","FIESTA"];
+let hi=0,hfails=0,hguessed=[];
+function hangman(){let w=HWORDS[hi%HWORDS.length];hfails=0;hguessed=[];renderHang(w)}
+function renderHang(w){shell("🪢 Ahorcado",`<p>Fallos: <b id="hf">0</b>/6</p><div id="hword" class="puzzle" style="letter-spacing:8px;text-align:center">${w.split('').map(()=>"_").join('')}</div><input id="hinput" type="text" maxlength="1" placeholder="Una letra"><p><button class="primary" onclick="guessH('${w}')">Probar</button></p><div id="hfb"></div>`)}
+function guessH(w){let l=norm(hinput.value);if(!l)return;if(!hguessed.includes(l))hguessed.push(l);if(!w.includes(l))hfails++;let out=w.split('').map(c=>hguessed.includes(c)?c:"_").join(' ');hword.textContent=out;hf.textContent=hfails;if(!out.includes("_")){award(true);hfb.innerHTML=`<div class="feedback ok">✅ ¡Palabra resuelta!</div><p><button class="primary" onclick="hi++;hangman()">Otra</button></p>`}else if(hfails>=6){award(false);hfb.innerHTML=`<div class="feedback bad">❌ Era ${w}</div><p><button class="primary" onclick="hi++;hangman()">Otra</button></p>`}hinput.value=""}
+
+const TF=[
+["La capital de Australia es Sídney.",false,"Es Canberra."],
+["Un pulpo tiene tres corazones.",true,"Sí, tiene tres corazones."],
+["El Everest está en África.",false,"Está en Asia, en el Himalaya."],
+["El agua hierve a 100 °C al nivel del mar.",true,"Correcto."],
+["Los delfines son peces.",false,"Son mamíferos."],
+["España está en los hemisferios norte y occidental/oriental según la zona.",true,"El meridiano de Greenwich atraviesa España."]
+]; let ti=0;
+function trueFalse(){let t=TF[ti%TF.length];shell("⚡ Verdadero o falso",`<div class="puzzle">${t[0]}</div><p><button class="primary" onclick="checkTF(true)">Verdadero</button> <button class="secondary" onclick="checkTF(false)">Falso</button></p><div id="tfb"></div>`)}
+function checkTF(v){let t=TF[ti%TF.length],ok=v===t[1];award(ok);tfb.innerHTML=`<div class="feedback ${ok?'ok':'bad'}">${ok?'✅ Correcto':'❌ No'}<br>${t[2]}</div><p><button class="primary" onclick="ti++;trueFalse()">Siguiente</button></p>`}
+
+function daily(){let d=new Date(),n=(d.getFullYear()*400+d.getMonth()*31+d.getDate())%4;if(n===0)quizGame();if(n===1)anagram();if(n===2)emojiGame();if(n===3)trueFalse()}
+function resetAll(){if(confirm("¿Borrar puntos y progreso?")){localStorage.removeItem("pv2");location.reload()}}
+</script>
+</body>
+</html>
