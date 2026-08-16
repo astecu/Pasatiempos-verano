@@ -1,95 +1,300 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8">
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0ea5e9"><meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json"><title>Pasatiempos de Verano V3</title>
+<meta name="theme-color" content="#0ea5e9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pasatiempos TOP">
+<link rel="manifest" href="manifest.json">
+<title>Pasatiempos V4 TOP</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--b:#0ea5e9;--g:#22c55e;--r:#ef4444;--i:#102033;--m:#6b7b8c;--l:#dbe7ef}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(#dff5ff,#f7fbff 30%);color:var(--i)}
-header{padding:calc(18px + env(safe-area-inset-top)) 18px 22px;background:linear-gradient(135deg,#0284c7,#0ea5e9,#22c55e);color:#fff}h1{margin:0;font-size:27px}header p{margin:6px 0 0}
-main{max-width:820px;margin:auto;padding:14px 14px 100px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat,.panel,.card{background:#fff;border-radius:18px;box-shadow:0 10px 28px #173f5f18}.stat{text-align:center;padding:10px 5px}.stat b{display:block;font-size:19px}.stat small,.muted{color:var(--m)}
-.panel{padding:15px;margin-top:14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}.card{border:0;padding:15px;text-align:left;min-height:125px}.card .e{font-size:28px}.card h3{margin:8px 0 4px}.card p{margin:0;color:var(--m);font-size:13px}
-button,select,input{font:inherit}.primary,.secondary,.option{border:0;border-radius:13px;padding:11px 14px;font-weight:700}.primary{background:var(--b);color:#fff}.secondary{background:#eaf2f6}.option{background:#fff;border:1px solid var(--l);text-align:left}
-input[type=text],select{width:100%;padding:11px;border:1px solid var(--l);border-radius:12px;background:#fff}.hidden{display:none}.puzzle{font-size:20px;line-height:1.45;margin:10px 0 15px}.options{display:grid;gap:8px}.fb{padding:12px;border-radius:12px;margin-top:12px}.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}
+:root{--b:#0ea5e9;--g:#22c55e;--r:#ef4444;--a:#f59e0b;--i:#102033;--m:#64748b;--l:#dbe7ef;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;background:linear-gradient(#dff5ff,#f7fbff 28%);color:var(--i);min-height:100vh}
+header{padding:calc(16px + env(safe-area-inset-top)) 16px 20px;background:linear-gradient(135deg,#0284c7,#0ea5e9 48%,#22c55e);color:#fff}
+header h1{margin:0;font-size:26px}header p{margin:5px 0 0;opacity:.92}
+main{max-width:820px;margin:auto;padding:14px 14px calc(100px + env(safe-area-inset-bottom))}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stat,.panel,.card{background:#fff;border-radius:18px;box-shadow:0 10px 28px #173f5f18}
+.stat{text-align:center;padding:10px 5px}.stat b{display:block;font-size:19px}.stat small,.muted{color:var(--m)}
+.panel{padding:15px;margin-top:14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card{border:0;padding:15px;text-align:left;min-height:120px}
+.card .e{font-size:28px}.card h3{margin:8px 0 4px}.card p{margin:0;color:var(--m);font-size:13px}
+button,select,input{font:inherit}.primary,.secondary,.danger,.option{border:0;border-radius:13px;padding:11px 14px;font-weight:700}
+.primary{background:var(--b);color:#fff}.secondary{background:#eaf2f6}.danger{background:#fee2e2;color:#991b1b}.option{background:#fff;border:1px solid var(--l);text-align:left}
+input,select{width:100%;padding:11px;border:1px solid var(--l);border-radius:12px;background:#fff;font-size:16px}.hidden{display:none!important}
+.puzzle{font-size:20px;line-height:1.45;margin:10px 0 15px}.options{display:grid;gap:8px}.fb{padding:12px;border-radius:12px;margin-top:12px}
+.ok{background:#dcfce7;color:#166534}.bad{background:#fee2e2;color:#991b1b}.info{background:#e0f2fe;color:#075985}
 .progress{height:9px;background:#e8f1f5;border-radius:99px;overflow:hidden}.progress div{height:100%;background:var(--g)}
-.word{font-size:30px;letter-spacing:5px;text-align:center;margin:16px 0}.tiles{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin:12px}.tile{padding:10px 12px;border-radius:11px;background:#e8f1f5;font-weight:800;font-size:18px}
-.rosco{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:12px 0}.r{aspect-ratio:1;border-radius:50%;border:0;background:#e8f1f5;font-weight:800}.r.on{background:var(--b);color:#fff}.r.good{background:var(--g);color:#fff}.r.bad{background:var(--r);color:#fff}
-nav{position:fixed;left:0;right:0;bottom:0;background:#fffffff2;backdrop-filter:blur(12px);padding:9px 12px calc(9px + env(safe-area-inset-bottom));border-top:1px solid var(--l)}nav div{max-width:820px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}nav button{border:0;border-radius:12px;background:#edf4f7;padding:9px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pill{padding:6px 9px;border-radius:99px;background:#edf4f7;font-size:13px}
+.duelcode{font-size:26px;font-weight:900;letter-spacing:2px;text-align:center;margin:10px 0}
+nav{position:fixed;left:0;right:0;bottom:0;background:#fffffff2;backdrop-filter:blur(12px);padding:9px 12px calc(9px + env(safe-area-inset-bottom));border-top:1px solid var(--l)}
+nav>div{max-width:820px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:7px}nav button{border:0;border-radius:12px;background:#edf4f7;padding:9px 5px;font-size:11px}
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,#0284c7,#22c55e);color:white;display:flex;align-items:center;justify-content:center;z-index:30;padding:25px;text-align:center}
+#splash h2{font-size:30px;margin:0 0 8px}.spinner{width:32px;height:32px;border:4px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:18px auto}@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:410px){.stats{grid-template-columns:repeat(2,1fr)}}
-</style></head><body>
-<header><h1>☀️ Pasatiempos de Verano V3</h1><p>Más juegos, dificultad y estadísticas</p></header>
-<main><section id="home">
-<div class="stats"><div class="stat"><b id="score">0</b><small>Puntos</small></div><div class="stat"><b id="wins">0</b><small>Aciertos</small></div><div class="stat"><b id="streak">0</b><small>Racha</small></div><div class="stat"><b id="level">1</b><small>Nivel</small></div></div>
-<div class="panel"><b>Dificultad</b><select id="diff" onchange="setDiff(this.value)"><option value="facil">Fácil</option><option value="media">Media</option><option value="dificil">Difícil</option></select></div>
-<div class="panel"><b>🌞 Juego del día</b><p class="muted">Cambia según la fecha.</p><button class="primary" onclick="daily()">Jugar</button></div>
-<h2>Juegos</h2><div class="grid">
-<button class="card" onclick="quiz()"><div class="e">🧠</div><h3>Acertijos</h3><p>Lógica y preguntas trampa.</p></button>
-<button class="card" onclick="anagram()"><div class="e">🔀</div><h3>Anagramas</h3><p>Ordena las letras.</p></button>
-<button class="card" onclick="emoji()"><div class="e">🎬</div><h3>Emojis</h3><p>Adivina películas y música.</p></button>
-<button class="card" onclick="hangman()"><div class="e">🪢</div><h3>Ahorcado</h3><p>Palabras por dificultad.</p></button>
-<button class="card" onclick="tf()"><div class="e">⚡</div><h3>Verdadero/Falso</h3><p>Cultura general.</p></button>
-<button class="card" onclick="defs()"><div class="e">🟨</div><h3>Autodefinidos</h3><p>Definiciones rápidas.</p></button>
-<button class="card" onclick="categories()"><div class="e">🗂️</div><h3>Categorías</h3><p>Encuentra la palabra intrusa.</p></button>
-<button class="card" onclick="rosco()"><div class="e">⭕</div><h3>Rosco</h3><p>Definiciones por letra.</p></button>
-</div>
-<div class="panel"><b>🏆 Progreso</b><p class="muted">Cada 15 puntos subes de nivel.</p><div class="progress"><div id="bar"></div></div></div>
-<div class="panel"><b>📊 Estadísticas</b><div id="statsBox" class="muted" style="margin-top:8px"></div></div>
-</section><section id="game" class="hidden"></section></main>
-<nav><div><button onclick="homeGo()">🏠<br>Inicio</button><button onclick="daily()">🌞<br>Del día</button><button onclick="resetAll()">↻<br>Reiniciar</button></div></nav>
+</style>
+</head>
+<body>
+<div id="splash"><div><h2>🧠 Pasatiempos TOP</h2><p>Preparando tu partida...</p><div class="spinner"></div></div></div>
+<header><h1>🧠 Pasatiempos V4 TOP</h1><p id="welcome">Conectando…</p></header>
+<main>
+<section id="onboarding" class="hidden">
+ <div class="panel">
+  <h2>👋 ¿Cómo te llamamos?</h2>
+  <p class="muted">Solo necesitas un apodo. No hace falta registrarse.</p>
+  <input id="nicknameInput" maxlength="24" placeholder="Tu apodo">
+  <p><button class="primary" onclick="saveNickname()">Empezar</button></p>
+  <div id="onboardOut"></div>
+ </div>
+</section>
+
+<section id="home" class="hidden">
+ <div class="stats">
+  <div class="stat"><b id="score">0</b><small>Puntos</small></div>
+  <div class="stat"><b id="correct">0</b><small>Aciertos</small></div>
+  <div class="stat"><b id="streak">0</b><small>Racha</small></div>
+  <div class="stat"><b id="level">1</b><small>Nivel</small></div>
+ </div>
+
+ <div class="panel">
+  <b>🔄 Contenido renovado</b>
+  <p class="muted" id="syncInfo">Al entrar, la app comprueba preguntas nuevas sin borrar tu progreso.</p>
+  <div class="progress"><div id="bar"></div></div>
+ </div>
+
+ <div class="panel">
+  <h3 style="margin-top:0">🎲 Sorpréndeme</h3>
+  <p class="muted">Mezcla categorías y tipos de reto evitando repeticiones recientes.</p>
+  <button class="primary" onclick="startMixed()">Jugar ahora</button>
+ </div>
+
+ <h2>Jugar</h2>
+ <div class="grid">
+  <button class="card" onclick="startCategory(null)"><div class="e">♾️</div><h3>Modo infinito</h3><p>Sigue hasta que quieras parar.</p></button>
+  <button class="card" onclick="dailyChallenge()"><div class="e">🌞</div><h3>Reto del día</h3><p>Mismo reto para todos hoy.</p></button>
+  <button class="card" onclick="showCategories()"><div class="e">🌍</div><h3>Categorías</h3><p>Elige tus temas favoritos.</p></button>
+  <button class="card" onclick="showDuelMenu()"><div class="e">⚔️</div><h3>Duelo</h3><p>Crea un enlace y compite.</p></button>
+  <button class="card" onclick="showStats()"><div class="e">📊</div><h3>Estadísticas</h3><p>Tu progreso se conserva.</p></button>
+  <button class="card" onclick="localChallenge()"><div class="e">🧩</div><h3>Retos generados</h3><p>Anagramas y lógica sin fin.</p></button>
+ </div>
+</section>
+
+<section id="view" class="hidden"></section>
+</main>
+
+<nav><div>
+<button onclick="goHome()">🏠<br>Inicio</button>
+<button onclick="startMixed()">🎲<br>Sorpréndeme</button>
+<button onclick="showDuelMenu()">⚔️<br>Duelo</button>
+<button onclick="showStats()">📊<br>Stats</button>
+</div></nav>
+
 <script>
-const D={score:0,wins:0,streak:0,diff:"facil",stats:{},queues:{}};const S=Object.assign(D,JSON.parse(localStorage.getItem("pv3")||"{}"));
-function save(){localStorage.setItem("pv3",JSON.stringify(S));render()}function render(){score.textContent=S.score;wins.textContent=S.wins;streak.textContent=S.streak;level.textContent=Math.floor(S.score/15)+1;bar.style.width=((S.score%15)/15*100)+"%";diff.value=S.diff;statsBox.innerHTML=Object.keys(S.stats).length?Object.entries(S.stats).map(([k,v])=>`${k}: <b>${v.ok}/${v.played}</b>`).join("<br>"):"Todavía no hay partidas."}render()
-function setDiff(v){S.diff=v;save()}function norm(s){return(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toUpperCase()}
-function award(n,ok){S.stats[n]=S.stats[n]||{played:0,ok:0};S.stats[n].played++;if(ok){S.stats[n].ok++;S.score++;S.wins++;S.streak++}else S.streak=0;save()}
-function next(key,len){S.queues[key]=S.queues[key]||[];if(!S.queues[key].length)S.queues[key]=[...Array(len).keys()].sort(()=>Math.random()-.5);let n=S.queues[key].shift();save();return n}
-function shell(t,b){home.classList.add("hidden");game.classList.remove("hidden");game.innerHTML=`<button class="secondary" onclick="homeGo()">← Inicio</button><div class="panel"><h2>${t}</h2>${b}</div>`}
-function homeGo(){game.classList.add("hidden");home.classList.remove("hidden");render()}
+const SUPABASE_URL = "https://qbihdljfnqmgkmnrrcod.supabase.co";
+const SUPABASE_KEY = "sb_publishable_JEjr3VDcga4vwdoFgJaUEg_HvMcVmzu";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const Q={facil:[
-["¿Cuántos meses tienen 28 días?",["Uno","Todos","Seis"],1,"Todos tienen al menos 28 días."],
-["¿Qué pesa más: 1 kg de hierro o 1 kg de plumas?",["Hierro","Plumas","Lo mismo"],2,"Pesan lo mismo."],
-["Un gallo pone un huevo en un tejado. ¿Hacia qué lado cae?",["Izquierda","Derecha","Ninguno"],2,"Los gallos no ponen huevos."]
-],media:[
-["Adelantas al segundo en una carrera. ¿En qué posición quedas?",["Primero","Segundo","Tercero"],1,"Ocupas el segundo puesto."],
-["Una mujer tiene 4 hijas y cada hija un hermano. ¿Cuántos hijos tiene?",["5","8","4"],0,"Comparten el mismo hermano."],
-["3 pastillas, una cada 30 min. ¿Cuánto tardas en tomarlas?",["1 hora","1,5 horas","30 min"],0,"La tercera se toma a los 60 minutos."]
-],dificil:[
-["Un reloj tarda 5 s en dar 6 campanadas. ¿Cuánto en dar 12?",["10 s","11 s","12 s"],1,"12 campanadas crean 11 intervalos."],
-["Dos padres y dos hijos pescan 3 peces y cada uno lleva uno. ¿Cómo?",["Son 3 personas","Uno no pescó","Imposible"],0,"Abuelo, padre e hijo."],
-["¿Qué número sigue? 1, 1, 2, 3, 5, 8...",["11","12","13"],2,"Es la sucesión de Fibonacci."]
-]};let curQ;
-function quiz(){let a=Q[S.diff];curQ=a[next("q-"+S.diff,a.length)];shell("🧠 Acertijo",`<div class="puzzle">${curQ[0]}</div><div class="options">${curQ[1].map((x,i)=>`<button class="option" onclick="qAns(${i})">${x}</button>`).join("")}</div><div id="out"></div>`)}
-function qAns(i){let ok=i===curQ[2];award("Acertijos",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ No"}<br>${curQ[3]}</div><p><button class="primary" onclick="quiz()">Otra</button></p>`}
+let user=null, profile=null, playerStats=null, currentQuestion=null, questionStarted=0, currentMatch=null;
+const fallbackQuestions=[
+ {id:"local-1",category_slug:"logica",category_name:"Lógica",category_emoji:"🧩",type:"quiz",difficulty:"facil",prompt:"¿Cuántos meses tienen 28 días?",options:["Uno","Todos","Seis"],answer:"Todos",explanation:"Todos tienen al menos 28 días."},
+ {id:"local-2",category_slug:"cultura-general",category_name:"Cultura general",category_emoji:"🌍",type:"quiz",difficulty:"facil",prompt:"¿Cuál es la capital de Italia?",options:["Roma","Milán","Nápoles","Turín"],answer:"Roma",explanation:"Roma es la capital de Italia."},
+ {id:"local-3",category_slug:"ciencia",category_name:"Ciencia",category_emoji:"🔬",type:"true_false",difficulty:"media",prompt:"Un pulpo tiene tres corazones.",options:["Verdadero","Falso"],answer:"Verdadero",explanation:"Sí, los pulpos tienen tres corazones."},
+ {id:"local-4",category_slug:"historia",category_name:"Historia",category_emoji:"🏛️",type:"quiz",difficulty:"media",prompt:"¿En qué siglo comenzó la Revolución Francesa?",options:["XVII","XVIII","XIX","XX"],answer:"XVIII",explanation:"Comenzó en 1789, en el siglo XVIII."},
+ {id:"local-5",category_slug:"geografia",category_name:"Geografía",category_emoji:"🗺️",type:"quiz",difficulty:"media",prompt:"¿Qué océano separa Europa de América?",options:["Índico","Pacífico","Atlántico","Ártico"],answer:"Atlántico",explanation:"El Atlántico separa Europa y África de América."}
+];
 
-const ANA=[["NRAEVEO","VERANO"],["YAPLA","PLAYA"],["ODHLEA","HELADO"],["SOTFIEA","FIESTA"],["NIPCAIS","PISCINA"],["RAOCB","BARCO"],["TAMALE","MALETA"],["JAEVI","VIAJE"],["RBAOES","SABOR"],["TCEAR","CARTA"]];let ca;
-function anagram(){ca=ANA[next("ana",ANA.length)];shell("🔀 Anagrama",`<div class="tiles">${ca[0].split("").map(x=>`<span class="tile">${x}</span>`).join("")}</div><input id="ans" type="text" placeholder="Palabra"><p><button class="primary" onclick="aCheck()">Comprobar</button></p><div id="out"></div>`)}
-function aCheck(){let ok=norm(ans.value)===ca[1];award("Anagramas",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ Era "+ca[1]}</div>`}
+async function init(){
+ try{
+   let {data:{session}}=await sb.auth.getSession();
+   if(!session){
+     const {data,error}=await sb.auth.signInAnonymously();
+     if(error) throw error;
+     session=data.session;
+   }
+   user=session.user;
+   await sb.rpc("ensure_player_state");
+   await loadProfile();
+   await loadStats();
+   await handleDeepLink();
+   splash.classList.add("hidden");
+   if(!profile || !profile.nickname || profile.nickname==="Jugador") showOnboarding(); else showHome();
+ }catch(e){
+   console.error(e);
+   splash.classList.add("hidden");
+   document.getElementById("onboarding").classList.remove("hidden");
+   onboardOut.innerHTML=`<div class="fb bad">No se pudo conectar con Supabase: ${e.message}</div>`;
+ }
+}
 
-const EM=[["👴🎈🏠☁️","UP"],["🦁👑","EL REY LEON"],["🚢🧊💔","TITANIC"],["👻🔫","CAZAFANTASMAS"],["👑👑👑👑🇸🇪","ABBA"],["👽📞🏠","ET"],["🧙‍♂️💍🌋","EL SENOR DE LOS ANILLOS"],["🦖🏝️🚙","JURASSIC PARK"],["👠🎃🏰","CENICIENTA"],["🐠🔎🌊","BUSCANDO A NEMO"]];let ce;
-function emoji(){ce=EM[next("emo",EM.length)];shell("🎬 Emojis",`<div style="font-size:42px;text-align:center;margin:15px">${ce[0]}</div><input id="ans" type="text" placeholder="¿Qué representa?"><p><button class="primary" onclick="eCheck()">Comprobar</button></p><div id="out"></div>`)}
-function eCheck(){let ok=norm(ans.value)===norm(ce[1]);award("Emojis",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ Era "+ce[1]}</div>`}
+async function loadProfile(){
+ const {data}=await sb.from("profiles").select("*").eq("user_id",user.id).maybeSingle();
+ profile=data;
+}
+async function loadStats(){
+ const {data}=await sb.from("player_stats").select("*").eq("user_id",user.id).maybeSingle();
+ playerStats=data||{total_points:0,total_correct:0,current_streak:0,best_streak:0,level:1,total_played:0};
+ renderStats();
+}
+function renderStats(){
+ if(!playerStats)return;
+ score.textContent=playerStats.total_points||0; correct.textContent=playerStats.total_correct||0; streak.textContent=playerStats.current_streak||0; level.textContent=playerStats.level||1;
+ bar.style.width=Math.min(100,((playerStats.total_points||0)%1500)/15)+"%";
+}
+function showOnboarding(){onboarding.classList.remove("hidden");home.classList.add("hidden");view.classList.add("hidden")}
+async function saveNickname(){
+ const n=nicknameInput.value.trim();
+ if(n.length<2){onboardOut.innerHTML='<div class="fb bad">Escribe un apodo de al menos 2 caracteres.</div>';return}
+ const {error}=await sb.from("profiles").update({nickname:n,last_seen_at:new Date().toISOString()}).eq("user_id",user.id);
+ if(error){onboardOut.innerHTML=`<div class="fb bad">${error.message}</div>`;return}
+ profile.nickname=n; showHome();
+}
+function showHome(){
+ onboarding.classList.add("hidden");view.classList.add("hidden");home.classList.remove("hidden");
+ welcome.textContent=`Hola, ${profile?.nickname||"Jugador"} · tu progreso está guardado`;
+ renderStats();
+}
+function goHome(){loadStats().then(showHome)}
+function shell(title,html){home.classList.add("hidden");onboarding.classList.add("hidden");view.classList.remove("hidden");view.innerHTML=`<button class="secondary" onclick="goHome()">← Inicio</button><div class="panel"><h2 style="margin-top:0">${title}</h2>${html}</div>`}
 
-const HW={facil:["VERANO","PLAYA","BARCO","VIAJE","FIESTA"],media:["PISCINA","AMIGOS","HELADO","MALETA","TERRAZA"],dificil:["SOMBRILLA","ACANTILADO","BRONCEADOR","EXCURSION","CHIRINGUITO"]};let hw,hf,hg;
-function hangman(){let a=HW[S.diff];hw=a[next("h-"+S.diff,a.length)];hf=0;hg=[];hRender()}
-function hRender(){shell("🪢 Ahorcado",`<p>Fallos: <b id="fails">${hf}</b>/6</p><div id="word" class="word">${hw.split("").map(c=>hg.includes(c)?c:"_").join(" ")}</div><input id="letter" type="text" maxlength="1" placeholder="Una letra"><p><button class="primary" onclick="hGuess()">Probar</button></p><div id="out"></div>`)}
-function hGuess(){let l=norm(letter.value);if(!l)return;if(!hg.includes(l))hg.push(l);if(!hw.includes(l))hf++;let txt=hw.split("").map(c=>hg.includes(c)?c:"_").join(" ");word.textContent=txt;fails.textContent=hf;if(!txt.includes("_")){award("Ahorcado",true);out.innerHTML=`<div class="fb ok">✅ Resuelto</div><p><button class="primary" onclick="hangman()">Otra</button></p>`}else if(hf>=6){award("Ahorcado",false);out.innerHTML=`<div class="fb bad">❌ Era ${hw}</div><p><button class="primary" onclick="hangman()">Otra</button></p>`}letter.value=""}
+async function getPack(count=1,category=null,difficulty="adaptativa"){
+ try{
+  const {data,error}=await sb.rpc("get_question_pack",{p_count:count,p_difficulty:difficulty,p_category_slug:category,p_types:null});
+  if(error)throw error;
+  if(data?.length)return data;
+ }catch(e){console.warn("RPC pack:",e.message)}
+ return [fallbackQuestions[Math.floor(Math.random()*fallbackQuestions.length)]];
+}
 
-const TF=[["La capital de Australia es Sídney.",false,"Es Canberra."],["Un pulpo tiene tres corazones.",true,"Correcto."],["Los delfines son peces.",false,"Son mamíferos."],["Venus es el planeta más caliente.",true,"Por su fuerte efecto invernadero."],["El sonido viaja más rápido que la luz.",false,"La luz es muchísimo más rápida."],["Un adulto suele tener 206 huesos.",true,"Correcto."],["El Nilo desemboca en el Atlántico.",false,"Desemboca en el Mediterráneo."],["La Antártida es un desierto.",true,"Es un desierto polar."]];let ct;
-function tf(){ct=TF[next("tf",TF.length)];shell("⚡ Verdadero/Falso",`<div class="puzzle">${ct[0]}</div><button class="primary" onclick="tCheck(true)">Verdadero</button> <button class="secondary" onclick="tCheck(false)">Falso</button><div id="out"></div>`)}
-function tCheck(v){let ok=v===ct[1];award("Verdadero/Falso",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ No"}<br>${ct[2]}</div>`}
+async function startMixed(){await nextRemoteQuestion(null)}
+async function startCategory(slug){await nextRemoteQuestion(slug)}
+async function nextRemoteQuestion(slug=null){
+ const pack=await getPack(1,slug,"adaptativa");
+ currentQuestion=pack[0]; questionStarted=Date.now();
+ const opts=currentQuestion.options||[];
+ shell(`${currentQuestion.category_emoji||"🧠"} ${currentQuestion.category_name||"Reto"}`,
+ `<div class="row"><span class="pill">${currentQuestion.difficulty||"media"}</span><span class="pill">${currentQuestion.type||"quiz"}</span></div>
+ <div class="puzzle">${currentQuestion.prompt}</div>
+ <div class="options">${Array.isArray(opts)?opts.map(x=>`<button class="option" onclick='answerRemote(${JSON.stringify(x)})'>${x}</button>`).join(""):""}</div>
+ ${!Array.isArray(opts)||!opts.length?'<input id="freeAnswer" type="text" placeholder="Tu respuesta"><p><button class="primary" onclick="answerRemote(freeAnswer.value)">Responder</button></p>':""}
+ <div id="out"></div>`);
+}
 
-const DF=[["Astro del día","SOL"],["Gran masa de agua salada","MAR"],["Postre frío","HELADO"],["Zona de arena junto al mar","PLAYA"],["Protege del sol en la playa","SOMBRILLA"],["Vehículo que navega","BARCO"],["Periodo de descanso laboral o escolar","VACACIONES"],["Lugar con agua para nadar","PISCINA"]];let cd;
-function defs(){cd=DF[next("def",DF.length)];shell("🟨 Autodefinido",`<div class="puzzle">${cd[0]}</div><input id="ans" type="text" placeholder="Respuesta"><p><button class="primary" onclick="dCheck()">Comprobar</button></p><div id="out"></div>`)}
-function dCheck(){let ok=norm(ans.value)===norm(cd[1]);award("Autodefinidos",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ Era "+cd[1]}</div>`}
+async function answerRemote(answer){
+ const ms=Date.now()-questionStarted;
+ if(String(currentQuestion.id).startsWith("local-")){
+   const ok=norm(answer)===norm(currentQuestion.answer);
+   let local=JSON.parse(localStorage.getItem("v4localstats")||'{"points":0,"correct":0}');
+   if(ok){local.points+=100;local.correct++} localStorage.setItem("v4localstats",JSON.stringify(local));
+   out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ No"}<br>${currentQuestion.explanation}</div><p><button class="primary" onclick="startMixed()">Siguiente</button></p>`;
+   return;
+ }
+ const {data,error}=await sb.rpc("check_answer",{p_question_id:currentQuestion.id,p_answer:answer,p_response_ms:ms});
+ if(error){out.innerHTML=`<div class="fb bad">${error.message}</div>`;return}
+ const r=data?.[0];
+ out.innerHTML=`<div class="fb ${r?.is_correct?"ok":"bad"}">${r?.is_correct?"✅ Correcto":"❌ No"} · +${r?.points||0} puntos<br>${r?.explanation||""}</div><p><button class="primary" onclick="startMixed()">Siguiente</button></p>`;
+ await loadStats();
+}
 
-const CAT=[[["Manzana","Pera","Plátano","Zanahoria"],3,"Zanahoria no es fruta."],[["Madrid","Roma","París","Andalucía"],3,"Andalucía no es una capital."],[["Tenis","Baloncesto","Natación","Violín"],3,"Violín no es un deporte."],[["Rojo","Azul","Verde","Mesa"],3,"Mesa no es un color."],[["Perro","Gato","Caballo","Salmón"],3,"Salmón es un pez."]];let cc;
-function categories(){cc=CAT[next("cat",CAT.length)];shell("🗂️ Palabra intrusa",`<div class="puzzle">¿Cuál no pertenece al grupo?</div><div class="options">${cc[0].map((x,i)=>`<button class="option" onclick="cCheck(${i})">${x}</button>`).join("")}</div><div id="out"></div>`)}
-function cCheck(i){let ok=i===cc[1];award("Categorías",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ No"}<br>${cc[2]}</div>`}
+function norm(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toUpperCase()}
 
-const RO={A:["Ave rapaz","AGUILA"],B:["Objeto redondo deportivo","BALON"],C:["Lugar donde vives","CASA"],D:["Jornada de 24 horas","DIA"],E:["Animal con trompa","ELEFANTE"],F:["Celebración con música","FIESTA"],G:["Animal que maúlla","GATO"],H:["Postre frío","HELADO"],I:["Tierra rodeada de agua","ISLA"],J:["Diversión con reglas","JUEGO"],L:["Satélite de la Tierra","LUNA"],M:["Masa de agua salada","MAR"],N:["Masa del cielo","NUBE"],O:["Movimiento del mar","OLA"],P:["Zona de arena junto al mar","PLAYA"],R:["Corriente natural de agua","RIO"],S:["Astro del día","SOL"],T:["Bebida infusionada","TE"],V:["Estación del calor","VERANO"],Z:["Calzado de verano","ZAPATILLA"]};let keys=Object.keys(RO),ri=0,rs={};
-function rosco(){let l=keys[ri%keys.length];shell("⭕ Rosco",`<div class="rosco">${keys.map(x=>`<button class="r ${x===l?"on":""} ${rs[x]||""}">${x}</button>`).join("")}</div><div class="puzzle"><b>${l}</b>: ${RO[l][0]}</div><input id="ans" type="text"><p><button class="primary" onclick="rCheck('${l}')">Responder</button> <button class="secondary" onclick="ri++;rosco()">Pasapalabra</button></p><div id="out"></div>`)}
-function rCheck(l){let ok=norm(ans.value)===norm(RO[l][1]);rs[l]=ok?"good":"bad";award("Rosco",ok);out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ Era "+RO[l][1]}</div><p><button class="primary" onclick="ri++;rosco()">Siguiente</button></p>`}
+async function showCategories(){
+ const {data}=await sb.from("categories").select("slug,name,emoji").eq("active",true).order("sort_order");
+ const cats=data||[];
+ shell("🌍 Categorías",`<div class="grid">${cats.map(c=>`<button class="card" onclick='startCategory(${JSON.stringify(c.slug)})'><div class="e">${c.emoji||"🎯"}</div><h3>${c.name}</h3><p>Preguntas nuevas y pendientes.</p></button>`).join("")||"<p>No hay categorías disponibles.</p>"}</div>`);
+}
 
-function daily(){[quiz,anagram,emoji,tf,defs,categories][Math.floor(Date.now()/86400000)%6]()}
-function resetAll(){if(confirm("¿Borrar todo el progreso?")){localStorage.removeItem("pv3");location.reload()}}
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
-</script></body></html>
+function localChallenge(){
+ const words=["ASTRONAUTA","BIBLIOTECA","CHOCOLATE","MURCIELAGO","PLANETA","AVENTURA","HISTORIA","MISTERIO","GUITARRA","MONTAÑA"];
+ const word=words[Math.floor(Math.random()*words.length)];
+ const shuffled=word.split("").sort(()=>Math.random()-.5).join("");
+ shell("🧩 Reto generado",`<p class="muted">Este reto se crea en el dispositivo y puede generar combinaciones prácticamente ilimitadas.</p><div class="puzzle">Ordena las letras:</div><div class="duelcode">${shuffled}</div><input id="genAns" placeholder="Palabra"><p><button class="primary" onclick='checkGenerated(${JSON.stringify(word)})'>Comprobar</button> <button class="secondary" onclick="localChallenge()">Otro</button></p><div id="out"></div>`);
+}
+function checkGenerated(word){const ok=norm(genAns.value)===word;out.innerHTML=`<div class="fb ${ok?"ok":"bad"}">${ok?"✅ Correcto":"❌ Era "+word}</div>`}
+
+async function showDuelMenu(){
+ shell("⚔️ Duelos",`
+ <p class="muted">Crea una partida y comparte el enlace, o introduce el código que te hayan enviado.</p>
+ <button class="primary" onclick="createDuel()">Crear duelo de 10 preguntas</button>
+ <hr style="border:0;border-top:1px solid var(--l);margin:18px 0">
+ <input id="joinCode" placeholder="Código del duelo">
+ <p><button class="secondary" onclick="joinDuel(joinCode.value)">Unirme</button></p>
+ <div id="out"></div>`);
+}
+async function createDuel(){
+ out.innerHTML='<div class="fb info">Creando duelo…</div>';
+ const {data,error}=await sb.rpc("create_match",{p_mode:"duel",p_difficulty:"media",p_question_count:10,p_max_players:2,p_category_slug:null});
+ if(error){out.innerHTML=`<div class="fb bad">${error.message}</div>`;return}
+ const r=data?.[0]; currentMatch=r?.match_id;
+ const link=`${location.origin}${location.pathname}?duel=${r.share_code}`;
+ out.innerHTML=`<div class="fb ok"><b>Duelo creado</b><div class="duelcode">${r.share_code}</div><p>Comparte este enlace:</p><input value="${link}" readonly id="shareLink"><p><button class="primary" onclick="shareDuel()">Compartir</button> <button class="secondary" onclick="playMatch('${currentMatch}')">Jugar</button></p></div>`;
+}
+async function shareDuel(){
+ const url=shareLink.value;
+ if(navigator.share) await navigator.share({title:"Duelo de Pasatiempos",text:`Te reto a una partida, ${profile.nickname}`,url});
+ else{await navigator.clipboard.writeText(url);alert("Enlace copiado")}
+}
+async function joinDuel(code){
+ code=String(code||"").trim().toUpperCase();
+ if(!code)return;
+ const {data,error}=await sb.rpc("join_match_by_code",{p_share_code:code});
+ if(error){out.innerHTML=`<div class="fb bad">${error.message}</div>`;return}
+ currentMatch=data?.[0]?.match_id;
+ out.innerHTML=`<div class="fb ok">✅ Te has unido.</div><p><button class="primary" onclick="playMatch('${currentMatch}')">Empezar</button></p>`;
+}
+async function playMatch(matchId){
+ currentMatch=matchId;
+ const {data,error}=await sb.rpc("get_match_questions",{p_match_id:matchId});
+ if(error||!data?.length){shell("⚔️ Duelo",`<div class="fb bad">${error?.message||"No hay preguntas"}</div>`);return}
+ sessionStorage.setItem("matchQuestions",JSON.stringify(data));sessionStorage.setItem("matchPos","0");showMatchQuestion();
+}
+function showMatchQuestion(){
+ const qs=JSON.parse(sessionStorage.getItem("matchQuestions")||"[]");const i=Number(sessionStorage.getItem("matchPos")||0);
+ if(i>=qs.length){showMatchLeaderboard();return}
+ currentQuestion=qs[i];questionStarted=Date.now();
+ const opts=currentQuestion.options||[];
+ shell(`⚔️ Duelo · ${i+1}/${qs.length}`,`<div class="puzzle">${currentQuestion.prompt}</div><div class="options">${opts.map(x=>`<button class="option" onclick='answerMatch(${i+1},${JSON.stringify(x)})'>${x}</button>`).join("")}</div>${!opts.length?'<input id="freeAnswer"><p><button class="primary" onclick="answerMatch('+(i+1)+',freeAnswer.value)">Responder</button></p>':""}<div id="out"></div>`);
+}
+async function answerMatch(position,answer){
+ const ms=Date.now()-questionStarted;
+ const {data,error}=await sb.rpc("submit_match_answer",{p_match_id:currentMatch,p_position:position,p_answer:answer,p_response_ms:ms});
+ if(error){out.innerHTML=`<div class="fb bad">${error.message}</div>`;return}
+ const r=data?.[0];out.innerHTML=`<div class="fb ${r?.is_correct?"ok":"bad"}">${r?.is_correct?"✅ Correcto":"❌ No"} · +${r?.points||0}</div><p><button class="primary" onclick="advanceMatch()">Siguiente</button></p>`;
+}
+function advanceMatch(){sessionStorage.setItem("matchPos",String(Number(sessionStorage.getItem("matchPos")||0)+1));showMatchQuestion()}
+async function showMatchLeaderboard(){
+ const {data,error}=await sb.rpc("get_match_leaderboard",{p_match_id:currentMatch});
+ shell("🏆 Resultado del duelo",error?`<div class="fb bad">${error.message}</div>`:`${(data||[]).map((p,i)=>`<div class="panel"><b>${i+1}. ${p.nickname}</b><br>${p.score} puntos · ${p.correct_count} aciertos</div>`).join("")}`);
+}
+
+async function dailyChallenge(){
+ // V4 inicial: usa selección estable por fecha desde el banco; luego podrá usar tabla daily_challenges.
+ const pack=await getPack(10,null,"media");
+ localStorage.setItem("dailyPack-"+new Date().toISOString().slice(0,10),JSON.stringify(pack));
+ currentQuestion=pack[0];questionStarted=Date.now();
+ shell("🌞 Reto del día",`<p class="muted">Versión inicial: 10 preguntas seleccionadas para hoy.</p><button class="primary" onclick="startMixed()">Comenzar</button>`);
+}
+
+async function showStats(){
+ await loadStats();
+ const {data:cats}=await sb.from("category_stats").select("played,correct,points,categories(name,emoji)").eq("user_id",user.id);
+ shell("📊 Tus estadísticas",`
+ <div class="stats">
+  <div class="stat"><b>${playerStats.total_played||0}</b><small>Jugadas</small></div>
+  <div class="stat"><b>${playerStats.total_correct||0}</b><small>Aciertos</small></div>
+  <div class="stat"><b>${playerStats.best_streak||0}</b><small>Mejor racha</small></div>
+  <div class="stat"><b>${playerStats.level||1}</b><small>Nivel</small></div>
+ </div>
+ <div class="panel"><b>Puntos totales</b><div class="duelcode">${playerStats.total_points||0}</div></div>
+ <div class="panel"><b>Por categoría</b><p class="muted">${cats?.length?cats.map(x=>`${x.categories?.emoji||""} ${x.categories?.name||""}: ${x.correct}/${x.played}`).join("<br>"):"Todavía no hay suficientes datos."}</p></div>`);
+}
+
+async function handleDeepLink(){
+ const code=new URLSearchParams(location.search).get("duel");
+ if(code){
+   // dejar que cargue perfil primero; al mostrar home, ofrecer unión.
+   setTimeout(()=>{showDuelMenu();setTimeout(()=>joinDuel(code),250)},500);
+ }
+}
+init();
+</script>
+</body></html>
