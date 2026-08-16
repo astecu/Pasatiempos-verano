@@ -5,5 +5,19 @@
   "display": "standalone",
   "background_color": "#f7fbff",
   "theme_color": "#0ea5e9",
-  "description": "Pasatiempos con contenido renovable, estadísticas y duelos online."
+  "description": "Pasatiempos con contenido renovable, estadísticas y duelos online.",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
