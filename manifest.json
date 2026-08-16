@@ -1,9 +1,9 @@
 {
-  "name": "Pasatiempos de Verano V2",
-  "short_name": "Pasatiempos V2",
+  "name": "Pasatiempos de Verano V3",
+  "short_name": "Pasatiempos V3",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f6fbff",
+  "background_color": "#f7fbff",
   "theme_color": "#0ea5e9",
-  "description": "Pasatiempos para móvil: acertijos, crucigramas, rosco, anagramas, sopa de letras y más."
+  "description": "Pasatiempos para móvil con niveles, estadísticas y juegos variados."
 }
