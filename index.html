@@ -216,7 +216,7 @@ function checkGenerated(word){const ok=norm(genAns.value)===word;out.innerHTML=`
 
 async function showDuelMenu(){
  shell("⚔️ Duelos",`
- <p class="muted">Crea una partida y comparte el enlace, o introduce el código que te hayan enviado.</p>
+ <p class="muted">Desafía a otra persona con las mismas preguntas. Crea tu duelo y envía el enlace, o introduce el código de un reto que hayas recibido.</p>
  <button class="primary" onclick="createDuel()">Crear duelo de 10 preguntas</button>
  <hr style="border:0;border-top:1px solid var(--l);margin:18px 0">
  <input id="joinCode" placeholder="Código del duelo">
@@ -233,7 +233,7 @@ async function createDuel(){
 }
 async function shareDuel(){
  const url=shareLink.value;
- if(navigator.share) await navigator.share({title:"Duelo de Pasatiempos",text:`Te reto a una partida, ${profile.nickname}`,url});
+ if(navigator.share) await navigator.share({title:"⚔️ Duelo de Pasatiempos",text:`⚔️ ${profile.nickname} te desafía a un duelo de 10 preguntas. ¿Serás capaz de superarme? 🔥 Acepta el reto y demuestra quién sabe más.`,url});
  else{await navigator.clipboard.writeText(url);alert("Enlace copiado")}
 }
 async function joinDuel(code){
@@ -252,7 +252,7 @@ async function playMatch(matchId){
 }
 function showMatchQuestion(){
  const qs=JSON.parse(sessionStorage.getItem("matchQuestions")||"[]");const i=Number(sessionStorage.getItem("matchPos")||0);
- if(i>=qs.length){showMatchLeaderboard();return}
+ if(i>=qs.length){awaitFinishMatch();return}
  currentQuestion=qs[i];questionStarted=Date.now();
  const opts=currentQuestion.options||[];
  shell(`⚔️ Duelo · ${i+1}/${qs.length}`,`<div class="puzzle">${currentQuestion.prompt}</div><div class="options">${opts.map(x=>`<button class="option" onclick='answerMatch(${i+1},${JSON.stringify(x)})'>${x}</button>`).join("")}</div>${!opts.length?'<input id="freeAnswer"><p><button class="primary" onclick="answerMatch('+(i+1)+',freeAnswer.value)">Responder</button></p>':""}<div id="out"></div>`);
@@ -264,9 +264,35 @@ async function answerMatch(position,answer){
  const r=data?.[0];out.innerHTML=`<div class="fb ${r?.is_correct?"ok":"bad"}">${r?.is_correct?"✅ Correcto":"❌ No"} · +${r?.points||0}</div><p><button class="primary" onclick="advanceMatch()">Siguiente</button></p>`;
 }
 function advanceMatch(){sessionStorage.setItem("matchPos",String(Number(sessionStorage.getItem("matchPos")||0)+1));showMatchQuestion()}
+async function awaitFinishMatch(){
+ try{ await sb.rpc("finish_match",{p_match_id:currentMatch}); }catch(e){ console.warn(e); }
+ await showMatchLeaderboard();
+}
+function formatTimeMs(ms){
+ const total=Math.max(0,Number(ms)||0);
+ const s=total/1000;
+ if(s<60) return s.toFixed(1)+" s";
+ const m=Math.floor(s/60);
+ const rem=(s%60).toFixed(1).padStart(4,"0");
+ return m+" min "+rem+" s";
+}
 async function showMatchLeaderboard(){
  const {data,error}=await sb.rpc("get_match_leaderboard",{p_match_id:currentMatch});
- shell("🏆 Resultado del duelo",error?`<div class="fb bad">${error.message}</div>`:`${(data||[]).map((p,i)=>`<div class="panel"><b>${i+1}. ${p.nickname}</b><br>${p.score} puntos · ${p.correct_count} aciertos</div>`).join("")}`);
+ if(error){shell("🏆 Resultado del duelo",`<div class="fb bad">${error.message}</div>`);return}
+ const rows=data||[];
+ const cards=rows.map((p,i)=>{
+   const medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+   return `<div class="panel"><b>${medal} ${i+1}. ${p.nickname}</b><br>
+   <span class="pill">✅ ${p.correct_count} aciertos</span>
+   <span class="pill">⏱️ ${formatTimeMs(p.total_time_ms)}</span>
+   <span class="pill">⭐ ${p.score} puntos</span>
+   ${i===0?'<p style="margin-bottom:0"><b>🏆 Ganador provisional/final</b></p>':""}
+   </div>`;
+ }).join("");
+ shell("🏆 Resultado del duelo",`
+ <p class="muted">Orden: más aciertos → menor tiempo total → más puntos.</p>
+ ${cards||"<p>Aún no hay resultados.</p>"}
+ `);
 }
 
 async function dailyChallenge(){
