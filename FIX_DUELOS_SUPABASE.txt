@@ -1,0 +1,13 @@
+-- PASATIEMPOS V4 TOP - FIX DUELOS
+-- Ejecutar una sola vez en Supabase > SQL Editor
+
+create or replace function public.generate_share_code()
+returns text
+language sql
+volatile
+as $$
+  select upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+$$;
+
+-- Prueba opcional: debe devolver un código de 8 caracteres
+select public.generate_share_code() as codigo_prueba;
