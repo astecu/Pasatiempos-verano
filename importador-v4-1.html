@@ -3,133 +3,210 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Importador V4.1</title>
+<title>Importador V4.1 corregido</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:-apple-system,system-ui;background:#eef7fb;color:#102033;margin:0;padding:20px}
 main{max-width:760px;margin:auto}.card{background:white;padding:18px;border-radius:18px;margin:12px 0;box-shadow:0 8px 24px #1232}
-button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:#0ea5e9;color:white}
-button:disabled{opacity:.5}progress{width:100%;height:18px}code{font-size:12px}.ok{color:#166534}.bad{color:#991b1b}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:#0ea5e9;color:white;margin:4px 0}
+button:disabled{opacity:.5}progress{width:100%;height:18px}.ok{color:#166534}.bad{color:#991b1b}.info{color:#075985}
+small{color:#64748b}
 </style>
 </head>
 <body><main>
 <h1>♾️ Importador V4.1</h1>
-<p>Importa bancos abiertos en español a Supabase. Los duplicados se saltan automáticamente por <b>source_id</b> y huella de contenido.</p>
+<p>Importa bancos abiertos en español a Supabase. Los duplicados se omiten automáticamente.</p>
+
 <div class="card">
   <h2>1. OpenBookQA-es</h2>
-  <p>1.000 preguntas de ciencia/razonamiento en español.</p>
+  <p>1.000 preguntas.</p>
   <button onclick="runSource('openbook')">Importar OpenBookQA</button>
 </div>
+
 <div class="card">
   <h2>2. SIQA-es</h2>
-  <p>1.931 preguntas de razonamiento social en español.</p>
+  <p>1.931 preguntas.</p>
   <button onclick="runSource('siqa')">Importar SIQA</button>
 </div>
+
 <div class="card">
   <h2>3. ARC-es</h2>
-  <p>869 preguntas de ciencia en niveles Easy y Challenge.</p>
+  <p>869 preguntas.</p>
   <button onclick="runSource('arc')">Importar ARC</button>
 </div>
-<div class="card"><h2>Estado</h2><div id="out">Preparado.</div><progress id="prog" max="100" value="0"></progress></div>
+
 <div class="card">
- <h3>Licencias / atribución</h3>
- <p>OpenBookQA-es y SIQA-es: BSC-LT, CC BY 4.0. ARC-es: BSC-LT, CC BY-SA 4.0. Conservamos la atribución dentro de cada pregunta importada.</p>
+  <h2>Estado</h2>
+  <div id="out">Preparado.</div>
+  <p><progress id="prog" max="100" value="0"></progress></p>
+  <small id="detail"></small>
 </div>
+
 <script>
-const URL="https://qbihdljfnqmgkmnrrcod.supabase.co";
-const KEY="sb_publishable_JEjr3VDcga4vwdoFgJaUEg_HvMcVmzu";
-const sb=supabase.createClient(URL,KEY);
+const SUPABASE_URL="https://qbihdljfnqmgkmnrrcod.supabase.co";
+const SUPABASE_KEY="sb_publishable_JEjr3VDcga4vwdoFgJaUEg_HvMcVmzu";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 async function ensureAuth(){
- let {data:{session}}=await sb.auth.getSession();
- if(!session){
-   const {data,error}=await sb.auth.signInAnonymously();
-   if(error)throw error;
-   session=data.session;
- }
- return session;
+  let {data:{session}}=await sb.auth.getSession();
+  if(!session){
+    out.innerHTML='<span class="info">Conectando con Supabase…</span>';
+    const {data,error}=await sb.auth.signInAnonymously();
+    if(error) throw error;
+    session=data.session;
+  }
+  return session;
 }
 
 const specs={
- openbook:[
-   {dataset:"BSC-LT/openbookqa-es",config:"default",split:"validation",count:500,parser:parseOpenBook},
-   {dataset:"BSC-LT/openbookqa-es",config:"default",split:"test",count:500,parser:parseOpenBook}
- ],
- siqa:[
-   {dataset:"BSC-LT/SIQA_es",config:"SIQA_es",split:"train",count:1931,parser:parseSIQA}
- ],
- arc:[
-   {dataset:"BSC-LT/arc_es",config:"ARC_Easy_es",split:"validation",count:570,parser:parseARC},
-   {dataset:"BSC-LT/arc_es",config:"ARC_Challenge_es",split:"validation",count:299,parser:parseARC}
- ]
+  openbook:[
+    {dataset:"BSC-LT/openbookqa-es",config:"default",split:"validation",count:500,parser:parseOpenBook},
+    {dataset:"BSC-LT/openbookqa-es",config:"default",split:"test",count:500,parser:parseOpenBook}
+  ],
+  siqa:[
+    {dataset:"BSC-LT/SIQA_es",config:"SIQA_es",split:"validation",count:1931,parser:parseSIQA}
+  ],
+  arc:[
+    {dataset:"BSC-LT/arc_es",config:"ARC_Easy_es",split:"validation",count:570,parser:parseARC},
+    {dataset:"BSC-LT/arc_es",config:"ARC_Challenge_es",split:"validation",count:299,parser:parseARC}
+  ]
 };
 
 function rowObj(x){return x.row||x;}
+
 function parseOpenBook(x){
- const r=rowObj(x), labels=r.choices?.label||["A","B","C","D"], texts=r.choices?.text||[];
- const idx=labels.indexOf(r.answerKey), correct=texts[idx];
- if(!r.question_stem||!correct)return null;
- return {source:"bsc-openbookqa-es",source_id:String(r.id),category_slug:"ciencia",difficulty:"media",
- prompt:r.question_stem,options:texts,correct_answer:correct,
- attribution:"BSC-LT/openbookqa-es — CC BY 4.0"};
+  const r=rowObj(x), labels=r.choices?.label||["A","B","C","D"], texts=r.choices?.text||[];
+  const idx=labels.indexOf(r.answerKey), correct=texts[idx];
+  if(!r.question_stem||!correct)return null;
+  return {
+    source:"bsc-openbookqa-es",
+    source_id:String(r.id),
+    category_slug:"ciencia",
+    difficulty:"media",
+    prompt:r.question_stem,
+    options:texts,
+    correct_answer:correct,
+    attribution:"BSC-LT/openbookqa-es — CC BY 4.0"
+  };
 }
+
 function parseSIQA(x){
- const r=rowObj(x), opts=[r.answer_a,r.answer_b,r.answer_c].filter(Boolean);
- const idx=Math.max(0,Number(r.label)-1), correct=opts[idx];
- if(!r.question||!correct)return null;
- return {source:"bsc-siqa-es",source_id:String(r.index),category_slug:"logica",difficulty:"media",
- prompt:(r.context? r.context+"\\n\\n":"")+r.question,options:opts,correct_answer:correct,
- attribution:"BSC-LT/SIQA_es — CC BY 4.0"};
+  const r=rowObj(x), opts=[r.answer_a,r.answer_b,r.answer_c].filter(Boolean);
+  const idx=Math.max(0,Number(r.label)-1), correct=opts[idx];
+  if(!r.question||!correct)return null;
+  return {
+    source:"bsc-siqa-es",
+    source_id:String(r.index),
+    category_slug:"logica",
+    difficulty:"media",
+    prompt:(r.context?r.context+"\n\n":"")+r.question,
+    options:opts,
+    correct_answer:correct,
+    attribution:"BSC-LT/SIQA_es — CC BY 4.0"
+  };
 }
+
 function parseARC(x){
- const r=rowObj(x);
- let opts=[],labels=[];
- if(r.choices?.text){opts=r.choices.text;labels=r.choices.label||["A","B","C","D"];}
- else{opts=[r.answer_a,r.answer_b,r.answer_c,r.answer_d].filter(Boolean);labels=["A","B","C","D"];}
- const key=r.answerKey||r.answerkey;
- const idx=labels.indexOf(key),correct=opts[idx];
- if(!r.question||!correct)return null;
- return {source:"bsc-arc-es",source_id:String(r.id),category_slug:"ciencia",
- difficulty:"media",prompt:r.question,options:opts,correct_answer:correct,
- attribution:"BSC-LT/arc_es — CC BY-SA 4.0"};
+  const r=rowObj(x);
+  let opts=[],labels=[];
+  if(r.choices?.text){
+    opts=r.choices.text;
+    labels=r.choices.label||["A","B","C","D"];
+  }else{
+    opts=[r.answer_a,r.answer_b,r.answer_c,r.answer_d].filter(Boolean);
+    labels=["A","B","C","D"];
+  }
+  const key=r.answerKey||r.answerkey;
+  const idx=labels.indexOf(key),correct=opts[idx];
+  if(!r.question||!correct)return null;
+  return {
+    source:"bsc-arc-es",
+    source_id:String(r.id),
+    category_slug:"ciencia",
+    difficulty:"media",
+    prompt:r.question,
+    options:opts,
+    correct_answer:correct,
+    attribution:"BSC-LT/arc_es — CC BY-SA 4.0"
+  };
 }
 
 async function fetchRows(spec,offset,length){
- const u=new URL("https://datasets-server.huggingface.co/rows");
- u.searchParams.set("dataset",spec.dataset);
- u.searchParams.set("config",spec.config);
- u.searchParams.set("split",spec.split);
- u.searchParams.set("offset",offset);
- u.searchParams.set("length",length);
- const res=await fetch(u);
- if(!res.ok)throw new Error(`${spec.dataset}: HTTP ${res.status}`);
- const j=await res.json();
- return j.rows||[];
+  const u=new window.URL("https://datasets-server.huggingface.co/rows");
+  u.searchParams.set("dataset",spec.dataset);
+  u.searchParams.set("config",spec.config);
+  u.searchParams.set("split",spec.split);
+  u.searchParams.set("offset",String(offset));
+  u.searchParams.set("length",String(length));
+
+  detail.textContent=`Descargando ${spec.dataset} / ${spec.config} / ${spec.split} / offset ${offset}`;
+
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),30000);
+  try{
+    const res=await fetch(u.toString(),{signal:controller.signal});
+    if(!res.ok){
+      const txt=await res.text();
+      throw new Error(`${spec.dataset}: HTTP ${res.status} — ${txt.slice(0,180)}`);
+    }
+    const j=await res.json();
+    return j.rows||[];
+  }finally{
+    clearTimeout(timer);
+  }
 }
+
 async function ingest(rows){
- const {data,error}=await sb.rpc("ingest_external_questions",{p_rows:rows});
- if(error)throw error;
- return data?.[0]||{inserted:0,skipped:0};
+  if(!rows.length) return {inserted:0,skipped:0};
+  detail.textContent=`Guardando lote de ${rows.length} preguntas en Supabase…`;
+  const {data,error}=await sb.rpc("ingest_external_questions",{p_rows:rows});
+  if(error)throw error;
+  return data?.[0]||{inserted:0,skipped:0};
 }
+
 async function runSource(name){
- await ensureAuth();
- const buttons=[...document.querySelectorAll("button")];buttons.forEach(b=>b.disabled=true);
- let inserted=0,skipped=0,done=0,total=specs[name].reduce((a,s)=>a+s.count,0);
- try{
-   for(const spec of specs[name]){
-     for(let offset=0;offset<spec.count;offset+=100){
-       out.textContent=`Descargando ${spec.dataset}… ${done}/${total}`;
-       const raw=await fetchRows(spec,offset,Math.min(100,spec.count-offset));
-       if(!raw.length)break;
-       const normalized=raw.map(spec.parser).filter(Boolean);
-       const r=await ingest(normalized);
-       inserted+=Number(r.inserted||0); skipped+=Number(r.skipped||0);
-       done+=raw.length; prog.value=Math.round(done/total*100);
-     }
-   }
-   out.innerHTML=`<span class="ok">✅ Terminado. Nuevas: ${inserted}. Duplicadas/omitidas: ${skipped}.</span>`;
- }catch(e){
-   console.error(e);out.innerHTML=`<span class="bad">❌ ${e.message}</span>`;
- }finally{buttons.forEach(b=>b.disabled=false)}
+  const buttons=[...document.querySelectorAll("button")];
+  buttons.forEach(b=>b.disabled=true);
+  prog.value=0;
+
+  let inserted=0,skipped=0,done=0;
+  const total=specs[name].reduce((a,s)=>a+s.count,0);
+
+  try{
+    await ensureAuth();
+    out.innerHTML='<span class="info">Iniciando importación…</span>';
+
+    for(const spec of specs[name]){
+      for(let offset=0;offset<spec.count;offset+=100){
+        out.innerHTML=`<span class="info">Procesando ${done}/${total}…</span>`;
+
+        const raw=await fetchRows(spec,offset,Math.min(100,spec.count-offset));
+        if(!raw.length) break;
+
+        const normalized=raw.map(spec.parser).filter(Boolean);
+        const r=await ingest(normalized);
+
+        inserted+=Number(r.inserted||0);
+        skipped+=Number(r.skipped||0);
+        done+=raw.length;
+        prog.value=Math.round(done/total*100);
+
+        out.innerHTML=`<span class="info">Importadas ${inserted} · omitidas ${skipped} · ${done}/${total}</span>`;
+        await new Promise(resolve=>setTimeout(resolve,120));
+      }
+    }
+
+    prog.value=100;
+    out.innerHTML=`<span class="ok">✅ Terminado. Nuevas: ${inserted}. Duplicadas/omitidas: ${skipped}.</span>`;
+    detail.textContent="Puedes continuar con el siguiente banco.";
+  }catch(e){
+    console.error(e);
+    out.innerHTML=`<span class="bad">❌ ${e.name==="AbortError"?"La descarga tardó demasiado. Vuelve a pulsar el botón.":e.message}</span>`;
+    detail.textContent="Haz una captura de este mensaje si vuelve a fallar.";
+  }finally{
+    buttons.forEach(b=>b.disabled=false);
+  }
 }
-</script></main></body></html>
+</script>
+</main></body>
+</html>
