@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="./pasatiempos-v4-apple-180.png?v=3">
 <link rel="apple-touch-icon-precomposed" href="./pasatiempos-v4-apple-180.png?v=3">
 <link rel="icon" type="image/png" sizes="32x32" href="./pasatiempos-v4-favicon-32.png?v=3">
-<title>Pasatiempos V4 TOP</title>
+<title>Pasatiempos V4.1 TOP</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--b:#0ea5e9;--g:#22c55e;--r:#ef4444;--a:#f59e0b;--i:#102033;--m:#64748b;--l:#dbe7ef;--card:#fff}
@@ -39,7 +39,7 @@ nav>div{max-width:820px;margin:auto;display:grid;grid-template-columns:repeat(4,
 </head>
 <body>
 <div id="splash"><div><h2>🧠 Pasatiempos TOP</h2><p>Preparando tu partida...</p><div class="spinner"></div></div></div>
-<header><h1>🧠 Pasatiempos V4 TOP</h1><p id="welcome">Conectando…</p></header>
+<header><h1>🧠 Pasatiempos V4.1 TOP</h1><p id="welcome">Conectando…</p></header>
 <main>
 <section id="onboarding" class="hidden">
  <div class="panel">
@@ -57,6 +57,11 @@ nav>div{max-width:820px;margin:auto;display:grid;grid-template-columns:repeat(4,
   <div class="stat"><b id="correct">0</b><small>Aciertos</small></div>
   <div class="stat"><b id="streak">0</b><small>Racha</small></div>
   <div class="stat"><b id="level">1</b><small>Nivel</small></div>
+ </div>
+
+ <div class="panel">
+  <b>♾️ Banco V4.1</b>
+  <p class="muted">La app prioriza preguntas que nunca has visto. Cuando el banco remoto se agota, genera retos nuevos sin reciclar los anteriores.</p>
  </div>
 
  <div class="panel">
@@ -118,9 +123,15 @@ async function init(){
    await sb.rpc("ensure_player_state");
    await loadProfile();
    await loadStats();
-   await handleDeepLink();
    splash.classList.add("hidden");
-   if(!profile || !profile.nickname || profile.nickname==="Jugador") showOnboarding(); else showHome();
+   const duelCode=new URLSearchParams(location.search).get("duel");
+   if(!profile || !profile.nickname || profile.nickname==="Jugador"){
+     if(duelCode) sessionStorage.setItem("pendingDuelCode",duelCode);
+     showOnboarding();
+   } else {
+     showHome();
+     if(duelCode) setTimeout(()=>{showDuelMenu();setTimeout(()=>joinDuel(duelCode),250)},350);
+   }
  }catch(e){
    console.error(e);
    splash.classList.add("hidden");
@@ -150,6 +161,11 @@ async function saveNickname(){
  const {error}=await sb.from("profiles").update({nickname:n,last_seen_at:new Date().toISOString()}).eq("user_id",user.id);
  if(error){onboardOut.innerHTML=`<div class="fb bad">${error.message}</div>`;return}
  profile.nickname=n; showHome();
+ const pending=sessionStorage.getItem("pendingDuelCode");
+ if(pending){
+   sessionStorage.removeItem("pendingDuelCode");
+   setTimeout(()=>{showDuelMenu();setTimeout(()=>joinDuel(pending),250)},350);
+ }
 }
 function showHome(){
  onboarding.classList.add("hidden");view.classList.add("hidden");home.classList.remove("hidden");
@@ -165,8 +181,56 @@ async function getPack(count=1,category=null,difficulty="adaptativa"){
   if(error)throw error;
   if(data?.length)return data;
  }catch(e){console.warn("RPC pack:",e.message)}
- return [fallbackQuestions[Math.floor(Math.random()*fallbackQuestions.length)]];
+ return [makeProceduralChallenge()];
 }
+
+function makeProceduralChallenge(){
+  // Procedural fallback: generates a fresh arithmetic/sequence challenge and stores used signatures locally.
+  const used=JSON.parse(localStorage.getItem("v41-procedural-used")||"[]");
+  const usedSet=new Set(used);
+  let q=null, signature="";
+  for(let attempts=0;attempts<200;attempts++){
+    const kind=Math.floor(Math.random()*3);
+    if(kind===0){
+      const a=2+Math.floor(Math.random()*47);
+      const b=2+Math.floor(Math.random()*47);
+      const op=Math.random()<0.5?"+":"×";
+      const ans=op==="+"?a+b:a*b;
+      signature=`calc:${a}:${op}:${b}`;
+      q={id:"local-"+signature,category_slug:"logica",category_name:"Cálculo mental",category_emoji:"🧮",type:"quiz",difficulty:"adaptativa",
+         prompt:`¿Cuánto es ${a} ${op} ${b}?`,
+         options:shuffleLocal([String(ans),String(ans+1),String(Math.max(0,ans-1)),String(ans+(2+Math.floor(Math.random()*5)))]),
+         answer:String(ans),explanation:`Resultado: ${ans}.`};
+    }else if(kind===1){
+      const start=1+Math.floor(Math.random()*20);
+      const step=2+Math.floor(Math.random()*9);
+      const seq=[0,1,2,3].map(i=>start+i*step);
+      const ans=start+4*step;
+      signature=`seq:${start}:${step}`;
+      q={id:"local-"+signature,category_slug:"logica",category_name:"Secuencias",category_emoji:"🔢",type:"quiz",difficulty:"adaptativa",
+         prompt:`¿Qué número sigue? ${seq.join(", ")}, …`,
+         options:shuffleLocal([String(ans),String(ans+step),String(ans-step),String(ans+1)]),
+         answer:String(ans),explanation:`La secuencia aumenta de ${step} en ${step}.`};
+    }else{
+      const h=1+Math.floor(Math.random()*12);
+      const add=1+Math.floor(Math.random()*20);
+      const ans=((h-1+add)%12)+1;
+      signature=`clock:${h}:${add}`;
+      q={id:"local-"+signature,category_slug:"logica",category_name:"Reto rápido",category_emoji:"⏰",type:"quiz",difficulty:"adaptativa",
+         prompt:`Si ahora son las ${h}:00, ¿qué hora será dentro de ${add} horas?`,
+         options:shuffleLocal([`${ans}:00`,`${((ans)%12)+1}:00`,`${((ans+10)%12)+1}:00`,`${h}:00`]),
+         answer:`${ans}:00`,explanation:`Al sumar ${add} horas llegamos a las ${ans}:00.`};
+    }
+    if(!usedSet.has(signature)) break;
+  }
+  if(q){
+    used.push(signature);
+    if(used.length>5000) used.splice(0,used.length-5000);
+    localStorage.setItem("v41-procedural-used",JSON.stringify(used));
+  }
+  return q||fallbackQuestions[Math.floor(Math.random()*fallbackQuestions.length)];
+}
+function shuffleLocal(a){ return [...new Set(a)].sort(()=>Math.random()-.5); }
 
 async function startMixed(){await nextRemoteQuestion(null)}
 async function startCategory(slug){await nextRemoteQuestion(slug)}
@@ -286,7 +350,7 @@ async function showMatchLeaderboard(){
    <span class="pill">✅ ${p.correct_count} aciertos</span>
    <span class="pill">⏱️ ${formatTimeMs(p.total_time_ms)}</span>
    <span class="pill">⭐ ${p.score} puntos</span>
-   ${i===0?'<p style="margin-bottom:0"><b>🏆 Ganador provisional/final</b></p>':""}
+   ${i===0?'<p style="margin-bottom:0"><b>🏆 GANADOR</b></p>':""}
    </div>`;
  }).join("");
  shell("🏆 Resultado del duelo",`
@@ -317,13 +381,7 @@ async function showStats(){
  <div class="panel"><b>Por categoría</b><p class="muted">${cats?.length?cats.map(x=>`${x.categories?.emoji||""} ${x.categories?.name||""}: ${x.correct}/${x.played}`).join("<br>"):"Todavía no hay suficientes datos."}</p></div>`);
 }
 
-async function handleDeepLink(){
- const code=new URLSearchParams(location.search).get("duel");
- if(code){
-   // dejar que cargue perfil primero; al mostrar home, ofrecer unión.
-   setTimeout(()=>{showDuelMenu();setTimeout(()=>joinDuel(code),250)},500);
- }
-}
+async function handleDeepLink(){ return; }
 init();
 </script>
 </body></html>
